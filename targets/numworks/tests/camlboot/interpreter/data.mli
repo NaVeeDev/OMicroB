@@ -116,3 +116,6 @@ val next_exn_id : unit -> int
 exception No_module_data
 val get_module_data : Location.t -> mdl -> mdl_val
 val module_name_of_unit_path : string -> string
+val string_of_value : value -> string
+val string_of_arg : value option -> string
+val print_value_to_stdout : value -> unit

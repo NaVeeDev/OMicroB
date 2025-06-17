@@ -415,8 +415,94 @@ let get_module_data loc = function
      end
 
 let module_name_of_unit_path path =
-  failwith "TODO module_name_of_unit_path"
+  if path = "ocaml.py" then
+    "Ocaml"
+  else begin
+
+    (* print_string "path = ";
+    print_endline path; *)
+
+    (* This function is used to convert a unit path (e.g. "foo/bar/baz.ml") *)
+    (* into a module name (e.g. "Foo_bar_baz"). It is used to create the *)
+    (* module name for the unit when it is loaded into the environment. *)
+    (* The module name is derived from the path by capitalizing each part *)
+    (* of the path and joining them with underscores. *)
+    (* The path is expected to be a valid unit path, i.e. it should not contain *)
+    (* any invalid characters or be empty. *)
+    (* The function currently raises an exception, as it is not yet implemented. *)
+    (* failwith "TODO module_name_of_unit_path" *)
+    let n = String.length path in
+    let guessed_ml_extension = String.sub path (n - 3) 3 in
+    let path_without_extension =
+      if guessed_ml_extension = ".ml" then
+        String.sub path 3 (n - 6)
+      else
+        String.sub path 3 (n - 3)
+    in
+
+    (* print_string "=> path_without_extension = ";
+    print_endline path_without_extension; *)
+
+    (* We remove the ".ml" extension from the path, as it is not needed for the module name. *)
+    (* The module name is derived from the path by capitalizing each part and joining them with underscores. *)
+    (* The path is expected to be a valid unit path, i.e. it should not contain any invalid characters or be empty. *)
+    (* The function currently raises an exception, as it is not yet implemented. *)
+    (* failwith "TODO module_name_of_unit_path" *)
+    let module_name = String.split_on_char '/' path_without_extension
+      |> List.map String.capitalize_ascii
+      |> String.concat "_"
+      |> String.capitalize_ascii
+      |> String.map (function ' ' -> '_' | c -> c)
+      |> String.trim
+    in
+
+    (* print_string "==> module_name = ";
+    print_endline module_name; *)
+
+    module_name
+  end
+  (* XXX: this was the previous implementation, but the Filename module is not available, so we hack it away (see above). *)
   (* path *)
   (* |> Filename.basename *)
   (* |> Filename.remove_extension *)
   (* |> String.capitalize_ascii *)
+
+  let rec string_of_value (arg : value) : string =
+    match (Ptr.get arg) with
+    | Int n -> string_of_int n
+    | Int32 n -> Int32.to_string n ^ "l" (* Standard way to represent int32 literals *)
+    | Int64 n -> Int64.to_string n ^ "L" (* Standard way to represent int64 literals *)
+    (* | Nativeint n -> Nativeint.to_string n ^ "n" (* Standard way to represent nativeint literals *) *)
+    | Fexpr _ -> "<fexpr>"
+    | Fun _ | Function _ | Prim _ | Lz _ | Fun_with_extra_args _ ->
+      "<function>"
+    | String s -> "\"" ^ (Bytes.to_string (Bytes.escaped s)) ^ "\""
+    | Float f -> string_of_float f
+    | Tuple l ->
+      "(" ^ (String.concat ", " (List.map string_of_value l)) ^ ")"
+    | Constructor (c, d, arg) ->
+      c ^ "#" ^ (string_of_int d) ^ (string_of_arg arg)
+    | Poly_variant (c, arg) ->
+      "`" ^ c ^ (string_of_arg arg)
+    | ModVal _ -> "<module>"
+    | InChannel _ -> "<in_channel>"
+    | OutChannel _ -> "<out_channel>"
+    | Record r ->
+      let fields =
+        SMap.fold (fun k v acc ->
+          (k ^ " = " ^ (string_of_value !v)) :: acc
+        ) r []
+      in
+      "{ " ^ (String.concat "; " (List.rev fields)) ^ " }" (* List.rev to maintain insertion order if any *)
+    | Array a ->
+      "[|" ^ (String.concat "; " (List.map string_of_value (Array.to_list a))) ^ "|]"
+    | Object _ -> "<object>"
+
+and string_of_arg (arg : value option) : string =
+  match arg with
+  | None -> ""
+  | Some v -> " " ^ (string_of_value v)
+
+let print_value_to_stdout (v : value) : unit =
+  print_string (string_of_value v);
+  print_newline ()

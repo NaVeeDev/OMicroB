@@ -6,13 +6,13 @@ DEVICE ?= numworks
 
 # FIXME: find what is the upper limit for these?
 STACK_SIZE = 16192
-HEAP_SIZE = 2048
+HEAP_SIZE = 16192
 
 TARGETS := $(PROG).hex $(PROG).elf
 
 INCLUDES := -I stdlib/ -I parsing/ -I interpreter/
 CINCLUDES := $(shell echo $(INCLUDES) | sed -e 's/ /,/g')
-OMICROB_PARAMS := -v -mlopts $(CINCLUDES) -mlopt=-ccopt=-DEADK_APP_NAME=$(EADK_APP_NAME) -device=$(DEVICE)
+OMICROB_PARAMS := -v -mlopts $(CINCLUDES) -mlopt=-g -mlopt=-ccopt=-DEADK_APP_NAME=$(EADK_APP_NAME) -device=$(DEVICE)
 
 OCAMLOPT = ocamlopt.opt
 
@@ -32,9 +32,20 @@ CMOS = $(patsubst %.ml,%.cmo,$(MLS))
 MLIS = $(filter %.mli,$(SSRCS))
 CMIS = $(patsubst %.mli,%.cmi,$(MLIS))
 
+
 .PHONY: all
-all: $(PROG).hex
+all: hex elf
+	file $(PROG).byte
+	file $(PROG).hex
 	cp -vf $(PROG).hex $(PROG).nwa
+	file $(PROG).nwa
+
+.PHONY: hex
+hex: $(PROG).hex
+	cp -vf $(PROG).hex $(PROG).nwa
+
+.PHONY: elf
+elf: $(PROG).elf
 
 $(TARGETS): $(CMOS) camlboot.cmo
 	@echo "Compiling .cmo files to .byte"
@@ -49,6 +60,7 @@ $(TARGETS): $(CMOS) camlboot.cmo
 .PHONY: clean
 clean:
 	rm -vf **/*.cm*
+	rm -vf *.hex *.elf *.nwa
 
 NWLINK = npx --yes -- nwlink@0.0.17
 
