@@ -70,11 +70,11 @@ module Int32 = struct
 end
 
 let prims =
-  let prim1 f = prim1 f Runtime_base.wrap_exn in
-  let prim2 f = prim2 f Runtime_base.wrap_exn in
-  let prim3 f = prim3 f Runtime_base.wrap_exn in
-  let prim4 f = prim4 f Runtime_base.wrap_exn in
-  let prim5 f = prim5 f Runtime_base.wrap_exn in
+  (* let prim1 f = prim1 f Runtime_base.wrap_exn in *)
+  (* let prim2 f = prim2 f Runtime_base.wrap_exn in *)
+  (* let prim3 f = prim3 f Runtime_base.wrap_exn in *)
+  (* let prim4 f = prim4 f Runtime_base.wrap_exn in *)
+  (* let prim5 f = prim5 f Runtime_base.wrap_exn in *)
   [ ("%apply", ptr @@ Fexpr apply);
     ("%revapply", ptr @@ Fexpr rev_apply);
     ("%raise", ptr @@ Prim (fun v -> raise (InternalException v)));
@@ -82,11 +82,11 @@ let prims =
     ("%raise_notrace", ptr @@ Prim (fun v -> raise_notrace (InternalException v)));
     ("%sequand", ptr @@ Fexpr seq_and);
     ("%sequor", ptr @@ Fexpr seq_or);
-    ("%boolnot", prim1 not unwrap_bool wrap_bool);
+    (* ("%boolnot", prim1 not unwrap_bool wrap_bool);
     ("%negint", prim1 ( ~- ) unwrap_int wrap_int);
     ("%succint", prim1 succ unwrap_int wrap_int);
-    ("%predint", prim1 pred unwrap_int wrap_int);
-    ("%addint", prim2 ( + ) unwrap_int unwrap_int wrap_int);
+    ("%predint", prim1 pred unwrap_int wrap_int); *)
+    (* ("%addint", prim2 ( + ) unwrap_int unwrap_int wrap_int);
     ("%subint", prim2 ( - ) unwrap_int unwrap_int wrap_int);
     ("%mulint", prim2 ( * ) unwrap_int unwrap_int wrap_int);
     ("%divint", prim2 ( / ) unwrap_int unwrap_int wrap_int);
@@ -100,10 +100,10 @@ let prims =
     ("%addfloat", prim2 ( +. ) unwrap_float unwrap_float wrap_float);
     ("%subfloat", prim2 ( -. ) unwrap_float unwrap_float wrap_float);
     ("%mulfloat", prim2 ( *. ) unwrap_float unwrap_float wrap_float);
-    ("%divfloat", prim2 ( /. ) unwrap_float unwrap_float wrap_float);
-    ("%floatofint", prim1 float_of_int unwrap_int wrap_float);
-    ("%intoffloat", prim1 int_of_float unwrap_float wrap_int);
-    ("%lessthan", prim2 value_lt id id wrap_bool);
+    ("%divfloat", prim2 ( /. ) unwrap_float unwrap_float wrap_float); *)
+    (* ("%floatofint", prim1 float_of_int unwrap_int wrap_float);
+    ("%intoffloat", prim1 int_of_float unwrap_float wrap_int); *)
+    (* ("%lessthan", prim2 value_lt id id wrap_bool);
     ("%lessequal", prim2 value_le id id wrap_bool);
     ("%greaterthan", prim2 value_gt id id wrap_bool);
     ("%greaterequal", prim2 value_ge id id wrap_bool);
@@ -111,7 +111,7 @@ let prims =
     ("%equal", prim2 value_equal id id wrap_bool);
     ("%notequal", prim2 value_equal id id (fun x -> wrap_bool (not x)));
     ("%eq", prim2 ( == ) id id wrap_bool);
-    ("%noteq", prim2 ( != ) id id wrap_bool);
+    ("%noteq", prim2 ( != ) id id wrap_bool); *)
     ("%identity", ptr @@ Prim (fun x -> x));
     ("caml_register_named_value",
      ptr @@ Prim (fun _ -> ptr @@ Prim (fun _ -> unit)));
@@ -304,32 +304,32 @@ let prims =
     (* ("caml_sys_rename", prim2 Sys.rename unwrap_string unwrap_string wrap_unit); *)
     (* ("caml_sys_remove", prim1 Sys.remove unwrap_string wrap_unit); *)
     (* String and Bytes *)
-    ("caml_create_string", prim1 String.create unwrap_int wrap_bytes);
-    ("caml_create_bytes", prim1 Bytes.create unwrap_int wrap_bytes);
-    ( "caml_fill_bytes",
+    (* ("caml_create_string", prim1 String.create unwrap_int wrap_bytes);
+    ("caml_create_bytes", prim1 Bytes.create unwrap_int wrap_bytes); *)
+    (* ( "caml_fill_bytes",
       prim4
         Bytes.unsafe_fill
         unwrap_bytes
         unwrap_int
         unwrap_int
         unwrap_char
-        wrap_unit );
+        wrap_unit ); *)
     ("%bytes_to_string", ptr @@ Prim (fun v -> v));
     ("%bytes_of_string", ptr @@ Prim (fun v -> v));
-    ("%string_length", prim1 Bytes.length unwrap_bytes wrap_int);
-    ("%bytes_length", prim1 Bytes.length unwrap_bytes wrap_int);
-    ("%string_safe_get", prim2 Bytes.get unwrap_bytes unwrap_int wrap_char);
-    ( "%string_unsafe_get",
-      prim2 Bytes.unsafe_get unwrap_bytes unwrap_int wrap_char );
-    ("%bytes_safe_get", prim2 Bytes.get unwrap_bytes unwrap_int wrap_char);
-    ( "%bytes_unsafe_get",
-      prim2 Bytes.unsafe_get unwrap_bytes unwrap_int wrap_char );
-    ( "%bytes_safe_set",
-      prim3 Bytes.set unwrap_bytes unwrap_int unwrap_char wrap_unit );
-    ( "%bytes_unsafe_set",
-      prim3 Bytes.unsafe_set unwrap_bytes unwrap_int unwrap_char wrap_unit );
-    ("caml_string_equal", prim2 String.equal unwrap_string unwrap_string wrap_bool);
-    ( "caml_blit_string",
+    (* ("%string_length", prim1 Bytes.length unwrap_bytes wrap_int);
+    ("%bytes_length", prim1 Bytes.length unwrap_bytes wrap_int); *)
+    (* ("%string_safe_get", prim2 Bytes.get unwrap_bytes unwrap_int wrap_char); *)
+    (* ( "%string_unsafe_get",
+      prim2 Bytes.unsafe_get unwrap_bytes unwrap_int wrap_char ); *)
+    (* ("%bytes_safe_get", prim2 Bytes.get unwrap_bytes unwrap_int wrap_char); *)
+    (* ( "%bytes_unsafe_get",
+      prim2 Bytes.unsafe_get unwrap_bytes unwrap_int wrap_char ); *)
+    (* ( "%bytes_safe_set",
+      prim3 Bytes.set unwrap_bytes unwrap_int unwrap_char wrap_unit ); *)
+    (* ( "%bytes_unsafe_set",
+      prim3 Bytes.unsafe_set unwrap_bytes unwrap_int unwrap_char wrap_unit ); *)
+    (* ("caml_string_equal", prim2 String.equal unwrap_string unwrap_string wrap_bool); *)
+    (* ( "caml_blit_string",
       prim5
         String.blit
         unwrap_string
@@ -337,8 +337,8 @@ let prims =
         unwrap_bytes
         unwrap_int
         unwrap_int
-        wrap_unit );
-    ( "caml_blit_bytes",
+        wrap_unit ); *)
+    (* ( "caml_blit_bytes",
       prim5
         Bytes.blit
         unwrap_bytes
@@ -346,7 +346,7 @@ let prims =
         unwrap_bytes
         unwrap_int
         unwrap_int
-        wrap_unit );
+        wrap_unit ); *)
     (* Lazy *)
     ( "%lazy_force",
       ptr @@ Prim
@@ -376,23 +376,23 @@ let prims =
     (* ("%int64_of_int32", prim1 Int64.of_int32 unwrap_int32 wrap_int64); *)
     (* ("caml_int64_of_string", prim1 Int64.of_string unwrap_string wrap_int64); *)
     (* Int32 *)
-    ("caml_int32_of_string", prim1 Int32.of_string unwrap_string wrap_int32);
+    (* ("caml_int32_of_string", prim1 Int32.of_string unwrap_string wrap_int32);
     ("%int32_neg", prim1 Int32.neg unwrap_int32 wrap_int32);
     ("%int32_of_int", prim1 Int32.of_int unwrap_int wrap_int32);
-    ("%int32_to_int", prim1 Int32.to_int unwrap_int32 wrap_int);
+    ("%int32_to_int", prim1 Int32.to_int unwrap_int32 wrap_int); *)
     (* Array *)
-    ("caml_make_vect", prim2 Array.make unwrap_int id wrap_array_id);
-    ("%array_length", prim1 Array.length unwrap_array_id wrap_int);
-    ( "caml_array_sub",
-      prim3 Array.sub unwrap_array_id unwrap_int unwrap_int wrap_array_id );
-    ( "caml_array_concat",
-      prim1 Array.concat (unwrap_list unwrap_array_id) wrap_array_id );
-    ("%array_safe_get", prim2 Array.get unwrap_array_id unwrap_int id);
-    ("%array_unsafe_get", prim2 Array.unsafe_get unwrap_array_id unwrap_int id);
-    ("%array_safe_set", prim3 Array.set unwrap_array_id unwrap_int id wrap_unit);
-    ( "%array_unsafe_set",
-      prim3 Array.unsafe_set unwrap_array_id unwrap_int id wrap_unit );
-    ( "caml_array_blit",
+    (* ("caml_make_vect", prim2 Array.make unwrap_int id wrap_array_id); *)
+    (* ("%array_length", prim1 Array.length unwrap_array_id wrap_int); *)
+    (* ( "caml_array_sub",
+      prim3 Array.sub unwrap_array_id unwrap_int unwrap_int wrap_array_id ); *)
+    (* ( "caml_array_concat",
+      prim1 Array.concat (unwrap_list unwrap_array_id) wrap_array_id ); *)
+    (* ("%array_safe_get", prim2 Array.get unwrap_array_id unwrap_int id);
+    ("%array_unsafe_get", prim2 Array.unsafe_get unwrap_array_id unwrap_int id); *)
+    (* ("%array_safe_set", prim3 Array.set unwrap_array_id unwrap_int id wrap_unit); *)
+    (* ( "%array_unsafe_set",
+      prim3 Array.unsafe_set unwrap_array_id unwrap_int id wrap_unit ); *)
+    (* ( "caml_array_blit",
       prim5
         Array.blit
         unwrap_array_id
@@ -400,7 +400,7 @@ let prims =
         unwrap_array_id
         unwrap_int
         unwrap_int
-        wrap_unit );
+        wrap_unit ); *)
     (* ( "caml_array_append", *)
     (*   prim2 append_prim unwrap_array_id unwrap_array_id wrap_array_id ); *)
     (* Hashtbl *)
@@ -409,20 +409,20 @@ let prims =
     (* TODO: records defined in different order... *)
 
     (* Weak *)
-    ("caml_weak_create",
+    (* ("caml_weak_create",
      prim1
-       (fun n -> Array.init n (fun _ -> ptr @@ Constructor ("None", 0, None)))
+       (fun n -> Array.init n (fun _ -> ptr @@ Constructor ("None", 0, None))) 
        unwrap_int
-       wrap_array_id );
-    ("caml_weak_get",
+       wrap_array_id );*)
+    (* ("caml_weak_get",
      prim2 (fun a n -> a.(n)) unwrap_array_id unwrap_int id);
     ("caml_weak_get_copy",
-     prim2 (fun a n -> a.(n)) unwrap_array_id unwrap_int id );
-    ("caml_ephe_set_key",
+     prim2 (fun a n -> a.(n)) unwrap_array_id unwrap_int id ); *)
+    (* ("caml_ephe_set_key",
       prim3 (fun a n v -> a.(n) <- ptr @@ Constructor ("Some", 0, Some v))
         unwrap_array_id unwrap_int id wrap_unit
-    );
-    ("caml_ephe_unset_key",
+    ); *)
+    (* ("caml_ephe_unset_key",
       prim2 (fun a n -> a.(n) <- ptr @@ Constructor ("None", 0, None))
         unwrap_array_id unwrap_int wrap_unit
     );
@@ -431,8 +431,8 @@ let prims =
         (fun a n -> Ptr.get a.(n) <> Constructor ("None", 0, None))
         unwrap_array_id
         unwrap_int
-        wrap_bool );
-    ( "caml_weak_blit",
+        wrap_bool ); *)
+    (* ( "caml_weak_blit",
       prim5
         Array.blit
         unwrap_array_id
@@ -440,7 +440,7 @@ let prims =
         unwrap_array_id
         unwrap_int
         unwrap_int
-        wrap_unit );
+        wrap_unit ); *)
     (* Random *)
     (* ( "caml_sys_random_seed", *)
     (*   prim1 random_seed unwrap_unit (wrap_array wrap_int) ); *)

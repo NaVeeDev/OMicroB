@@ -113,7 +113,7 @@ let decompose get_module_data env { txt = lident; loc } =
 
 let lookup object_name ~env_name object_env { txt = str; loc } =
   try snd (SMap.find str object_env)
-  with Not_found -> 
+  with Not_found ->
     (* Format.eprintf *)
     (*   "%a@.%s not found in %s: %s@." *)
     (*   Location.print_loc *)

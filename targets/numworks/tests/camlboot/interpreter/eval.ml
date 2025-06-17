@@ -337,15 +337,7 @@ and eval_expr prims env expr =
   | Pexp_assert e ->
     if is_true (eval_expr prims env e)
     then unit
-    else (
-      let loc = expr.pexp_loc in
-      let Lexing.{ pos_fname; pos_lnum; pos_cnum; _ } =
-        loc.Location.loc_start
-      in
-      raise
-        (InternalException
-           (Runtime_base.assert_failure_exn pos_fname pos_lnum pos_cnum)))
-  | Pexp_lazy e -> ptr @@ Lz (ref (fun () -> eval_expr prims env e))
+    else (assert false)
   | Pexp_poly (e, _ty) -> eval_expr prims env e
   | Pexp_newtype (_, e) -> eval_expr prims env e
   | Pexp_open (open_decl, e) ->

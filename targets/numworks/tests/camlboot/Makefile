@@ -8,7 +8,7 @@ DEVICE ?= numworks
 STACK_SIZE = 16192
 HEAP_SIZE = 16192
 
-TARGETS := $(PROG).hex $(PROG).elf
+TARGETS := $(PROG).hex $(PROG).elf testsmap.elf
 
 INCLUDES := -I stdlib/ -I parsing/ -I interpreter/
 CINCLUDES := $(shell echo $(INCLUDES) | sed -e 's/ /,/g')
@@ -24,7 +24,7 @@ C_SOURCE = interp.c
 SRCS += stdlib/*.mli stdlib/*.ml
 SRCS += parsing/*.mli parsing/*.ml
 SRCS += interpreter/*.mli interpreter/*.ml
-
+SRCS += testsmap.ml
 SSRCS = $(shell ocamldep -bytecode -sort $(INCLUDES) $(SRCS))
 
 MLS = $(filter %.ml,$(SSRCS))

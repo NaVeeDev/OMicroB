@@ -362,8 +362,8 @@ let lex_engine_wrapper tables n lexbuf =
 (*     id *)
 (*     wrap_parser_output *)
 
-let lex_engine_prim =
-  prim3 lex_engine_wrapper wrap_exn id unwrap_int id wrap_int
+(* let lex_engine_prim =
+  prim3 lex_engine_wrapper wrap_exn id unwrap_int id wrap_int *)
 
 (* let new_lex_engine_prim = *)
 (*   prim3 new_lex_engine_wrapper wrap_exn id unwrap_int id wrap_int *)

@@ -82,5 +82,5 @@ val lex_engine_wrapper :
 (* val new_lex_engine_wrapper : *)
 (*   value -> int -> value -> int *)
 (* val parse_engine_prim : value *)
-val lex_engine_prim : value
+(* val lex_engine_prim : value *)
 (* val new_lex_engine_prim : value *)
