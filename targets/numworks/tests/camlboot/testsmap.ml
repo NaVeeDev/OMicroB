@@ -30,7 +30,7 @@ let () =
   SMap.iter (fun key value ->
     print_string "Key: ";
     print_string key;
-    print_string "Value: ";
+    print_string " Value: ";
     print_endline value;
   ) map;
 

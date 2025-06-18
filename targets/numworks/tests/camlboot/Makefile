@@ -60,7 +60,7 @@ $(TARGETS): $(CMOS) camlboot.cmo
 .PHONY: clean
 clean:
 	rm -vf **/*.cm*
-	rm -vf *.hex *.elf *.nwa
+	rm -vf *.hex *.elf *.nwa *.byte
 
 NWLINK = npx --yes -- nwlink@0.0.17
 

@@ -1,7 +1,297 @@
 open Asttypes
 open Parsetree
 
-module SMap = Map.Make (String)
+(* module SMap = Map.Make (String) *)
+
+module SMap = struct
+
+  type key = string
+  type 'a t = 
+    | Empty
+    | Node of 'a t * key * 'a * 'a t * int
+
+  let height = function 
+    | Empty -> 0
+    | Node (_, _, _, _, h) -> h
+
+  let create l k v r =
+    let hl = height l in
+    let hr = height r in
+    Node (l, k, v, r, (max hl hr) + 1)
+  
+  let balance l k v r = 
+    let hl = height l in
+    let hr = height r in
+    if hl > hr + 2 then begin
+      match l with
+      | Empty -> assert false
+      | Node (ll, lk, lv, lr, _) -> 
+        if height ll >= height lr then
+          create ll lk lv (create lr k v r)
+        else begin
+          match lr with
+          | Empty -> assert false
+          | Node (lrl, lrk, lrv, lrr, _) ->
+            create (create ll lk lv lrl) lrk lrv (create lrr k v r)
+        end
+    end
+    else if hr > hl + 2 then begin
+      match r with
+      | Empty -> assert false
+      | Node (rl, rk, rv, rr, _) ->
+        if height rl <= height rr then
+          create (create l k v rl) rk rv rr
+        else begin
+          match rl with
+          | Empty -> assert false
+          | Node (rll, rlk, rlv, rlr, _) ->
+            create (create l k v rll) rlk rlv (create rlr rk rv rr)
+        end
+    end
+    else create l k v r
+
+  let empty = Empty
+
+  let is_empty = function
+    | Empty -> true
+    | _ -> false
+
+  let rec add k v = function
+    | Empty -> Node (Empty, k, v, Empty, 1)
+    | Node (l, k', v', r, _) as m -> 
+      let c = String.compare k k' in
+      if c = 0 then Node (l, k, v, r, height m)
+      else if c < 0 then balance (add k v l) k' v' r
+      else balance l k' v' (add k v r)
+  
+  let singleton k v = Node (Empty, k, v, Empty, 1)
+
+  let rec find k = function
+    | Empty -> raise Not_found
+    | Node (l, k', v, r, _) -> 
+      let c = String.compare k k' in
+      if c = 0 then v
+      else if c < 0 then find k l
+      else find k r
+    
+  let find_opt k m = try Some (find k m) with Not_found -> None
+
+  let mem k m =
+    try ignore (find k m); true
+    with Not_found -> false
+
+  let rec update k f = function
+    | Empty -> (match f None with 
+      | None -> Empty
+      | Some v -> singleton k v)
+    | Node (l, k', v, r, _) as m ->
+      let c = String.compare k k' in
+      if c = 0 then (match f (Some v) with
+        | None -> simple_merge l r
+        | Some v' -> Node (l, k, v', r, height m))
+      else if c < 0 then balance (update k f l) k' v r
+      else balance l k' v (update k f r) 
+
+  and simple_merge l r =
+    match l,r with
+    | Empty, x | x, Empty -> x
+    | _ -> let k,v = min_binding r in
+            balance l k v (remove k r)
+
+  and min_binding = function 
+    | Empty -> raise Not_found
+    | Node (Empty, k, v, _, _) -> (k, v)
+    | Node (l, k, v, r, _) -> min_binding l
+  
+  and remove k = function
+    | Empty -> Empty
+    | Node (l, k', v, r, _) ->
+      let c = String.compare k k' in
+      if c = 0 then simple_merge l r
+      else if c < 0 then balance (remove k l) k' v r
+      else balance l k' v (remove k r)
+
+  let rec min_binding_opt m = try Some (min_binding m) with Not_found -> None
+
+  let rec max_binding = function
+    | Empty -> raise Not_found
+    | Node (_, k, v, Empty, _) -> (k, v)
+    | Node (_, k, v, r, _) -> max_binding r
+
+  let max_binding_opt m = try Some (max_binding m) with Not_found -> None
+
+  let rec bindings = function
+    | Empty -> []
+    | Node (l, k, v, r, _) ->
+      bindings l @ [(k, v)] @ bindings r
+  
+  let rec cardinal = function 
+    | Empty -> 0
+    | Node (l, _, _, r, _) -> cardinal l + 1 + cardinal r
+      
+  let choose m = min_binding m
+
+  let choose_opt = min_binding_opt
+
+  let rec iter f = function
+    | Empty -> ()
+    | Node (l, k, v, r, _) ->
+      iter f l;
+      f k v;
+      iter f r
+
+  let rec fold f m acc =
+    match m with
+    | Empty -> acc
+    | Node (l, k, v, r, _) ->
+      fold f l (f k v (fold f r acc))
+  
+  let rec map f = function
+    | Empty -> Empty
+    | Node (l, k, v, r, _) -> balance (map f l) k (f v) (map f r)
+
+  let rec mapi f = function
+    | Empty -> Empty
+    | Node (l, k, v, r, _) ->
+      balance (mapi f l) k (f k v) (mapi f r)
+
+  let rec filter f = function 
+    | Empty -> Empty
+    | Node (l, k, v, r, _) ->
+      let l' = filter f l in
+      let r' = filter f r in
+      if f k v then balance l' k v r'
+      else simple_merge l' r'
+
+  let rec filter_map f = function
+    | Empty -> Empty 
+    | Node (l, k, v, r, _) ->
+      let l' = filter_map f l in
+      let r' = filter_map f r in
+      match f k v with
+        | None -> simple_merge l' r'
+        | Some v' -> balance l' k v' r'
+
+  let rec partition f = function
+    | Empty -> (Empty, Empty)
+    | Node (l, k, v, r, _) ->
+      let l1, l2 = partition f l in
+      let r1, r2 = partition f r in
+      if f k v then
+        (balance l1 k v r1, simple_merge l2 r2)
+      else
+        (simple_merge l1 r1, balance l2 k v r2)
+
+    let rec split k = function
+      | Empty -> (Empty, None, Empty)
+      | Node (l, k', v, r, _)->
+        let c = String.compare k k' in
+        if c = 0 then (l, Some v, r)
+        else if c < 0 then
+          let l1,pres, l2 = split k l in
+          (l1, pres, balance l2 k' v r)
+        else
+          let r1,pres, r2 = split k r in
+          (balance l k' v r1, pres, r2)
+
+    let rec merge f m1 m2 =
+      match m1, m2 with
+        | Empty, Empty -> Empty
+        | Empty, _ ->
+            fold (fun k v acc ->
+              match f k None (Some v) with
+              | None -> acc
+              | Some v' -> add k v' acc
+            ) m2 Empty
+        | _, Empty ->
+            fold (fun k v acc ->
+              match f k (Some v) None with
+              | None -> acc
+              | Some v' -> add k v' acc
+            ) m1 Empty
+        | Node (l1,k1,v1,r1,_ ), _ ->
+            let l2, o2, r2 = split k1 m2 in
+            let vo = f k1 (Some v1) o2 in
+            let l = merge f l1 l2 in
+            let r = merge f r1 r2 in
+            match vo with
+            | None -> simple_merge l r
+            | Some v -> balance l k1 v r
+
+    let union f m1 m2 = 
+      merge (fun k v1 v2 ->
+      match v1, v2 with
+      | Some v1, Some v2 -> f k v1 v2
+      | Some v, None | None, Some v -> Some v
+      | None, None -> None
+      ) m1 m2
+
+    let rec equal cmp m1 m2 = 
+      match m1,m2 with
+      | Empty, Empty -> true
+      | Node (l1, k1, v1, r1, _), Node (l2, k2, v2, r2, _) ->
+        String.equal k1 k2 && cmp v1 v2 && equal cmp l1 l2 && equal cmp r1 r2
+      | _ -> false
+    
+    let rec compare cmp m1 m2 =
+      match m1, m2 with
+        | Empty, Empty -> 0
+        | Empty, _ -> -1
+        | _, Empty -> 1
+        | Node (l1, k1, v1, r1, _), Node (l2, k2, v2, r2, _) ->
+          let c = String.compare k1 k2 in
+          if c <> 0 then c
+          else
+            let c = cmp v1 v2 in
+            if c <> 0 then c
+            else
+              let c = compare cmp l1 l2 in
+              if c <> 0 then c else compare cmp r1 r2
+      
+    let rec for_all f = function
+      | Empty -> true
+      | Node (l, k, v, r, _) ->
+        f k v && for_all f l && for_all f r
+    
+    let rec exists f = function
+      | Empty -> false
+      | Node (l, k, v, r, _) ->
+        f k v || exists f l || exists f r
+
+    let to_list m = bindings m
+    let of_list l = List.fold_left (fun acc (k, v) -> add k v acc) empty l
+    
+    let rec find_first f = function
+      | Empty -> raise Not_found
+      | Node (l, k, v, r, _) ->
+        if f k then 
+          match find_first f l with
+          | exception Not_found -> (k,v)
+          |  res ->  res 
+        else find_first f r
+    
+    let rec find_last f = function
+      | Empty -> raise Not_found
+      | Node (l, k, v, r, _) ->
+        if f k then 
+          match find_last f r with
+          | exception Not_found -> (k,v)
+          | res -> res
+        else find_last f l
+
+    let rec find_first_opt f m= try Some (find_first f m) with Not_found -> None
+    let rec find_last_opt f m = try Some (find_last f m) with Not_found -> None
+
+    let rec add_to_list k v = function
+      | Empty -> singleton k [v]
+      | Node (l, k', v', r, _) as m  ->
+        let c = String.compare k k' in
+        if c = 0 then Node (l, k, v::v', r, height m)
+        else if c < 0 then balance (add_to_list k v l) k' v' r
+        else balance l k' v' (add_to_list k v r)
+
+end
+
 module SSet = Set.Make (String)
 
 type module_unit_id = Path of string
