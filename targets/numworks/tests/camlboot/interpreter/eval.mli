@@ -2,15 +2,8 @@ open Data
 
 exception Match_fail
 val lident_name : Longident.t -> string
-val expr_label_shape :
-  Parsetree.expression_desc ->
-  (Asttypes.arg_label * Parsetree.expression option) list
-val fun_label_shape :
-  value_ ->
-  (Asttypes.arg_label * Parsetree.expression option) list
 val mismatch : Location.t -> unit
 val unsupported : Location.t -> unit
-val take : int -> 'a list -> 'a list
 val apply :
   value SMap.t ->
   value ->
@@ -60,8 +53,6 @@ val eval_class_expr :
 val eval_class_structure :
   value SMap.t ->
   env -> Location.t -> Parsetree.class_structure -> object_value
-val eval_obj_initializers :
-  value SMap.t -> env -> object_value -> unit
 val eval_obj_new :
   value SMap.t -> env -> Parsetree.class_expr -> value
 val eval_module_expr :

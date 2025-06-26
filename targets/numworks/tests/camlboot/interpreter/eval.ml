@@ -1,5 +1,5 @@
 open Asttypes
-open Parsetree
+open Parsetree 
 
 open Conf
 open Data
@@ -12,18 +12,6 @@ let rec lident_name = function
   | Longident.Ldot (_, s) -> s
   | Longident.Lapply (_l1, l2) -> lident_name l2
 
-let rec expr_label_shape = function
-  | Pexp_fun (label, default, _, e) ->
-    (label, default) :: expr_label_shape e.pexp_desc
-  | Pexp_function _ -> [ (Nolabel, None) ]
-  | _ -> []
-
-let fun_label_shape = function
-  | Fun (lab, default, _, e, _) ->
-    (lab, default) :: expr_label_shape e.pexp_desc
-  | Function _ -> [ (Nolabel, None) ]
-  | Prim _ -> [ (Nolabel, None) ]
-  | _ -> []
 
 let mismatch loc = failwith "TODO mismatch"
   (* Format.eprintf "%a: mismatch@." *)
@@ -32,11 +20,6 @@ let mismatch loc = failwith "TODO mismatch"
 let unsupported loc = failwith "TODO unsupported"
   (* Format.eprintf "%a: unsupported@." *)
   (*   Location.print_loc loc *)
-
-let rec take n li = match n, li with
-    | 0, _ -> []
-    | _, [] -> invalid_arg "List.take"
-    | n, x::xs -> x :: take (n - 1) xs
 
 let rec apply prims vf args =
   let vf, extral, extram =
@@ -219,7 +202,7 @@ and eval_expr prims env expr =
   | Pexp_sequence (e1, e2) ->
     let _ = eval_expr prims env e1 in
     eval_expr prims env e2
-  | Pexp_while (e1, e2) ->
+  (* | Pexp_while (e1, e2) ->
     while is_true (eval_expr prims env e1) do
       ignore (eval_expr prims env e2)
     done;
@@ -238,7 +221,7 @@ and eval_expr prims env expr =
         let vx = Runtime_base.wrap_int x in
         ignore (eval_expr prims (pattern_bind prims env p vx) e3)
       done;
-    unit
+    unit *)
   | Pexp_ifthenelse (e1, e2, e3) ->
     if is_true (eval_expr prims env e1)
     then eval_expr prims env e2
@@ -304,7 +287,7 @@ and eval_expr prims env expr =
   | Pexp_new lid ->
      let (class_expr, class_env) = env_get_class env lid in
      eval_obj_new prims !class_env class_expr
-  | Pexp_setinstvar (x, e) ->
+  (* | Pexp_setinstvar (x, e) ->
      let v = eval_expr prims env e in
      let x = { x with Location.txt = Longident.Lident x.txt } in
      begin match env_get_value_or_lvar env x with
@@ -313,7 +296,7 @@ and eval_expr prims env expr =
           let var = SMap.find name obj.variables in
           var := v
      end;
-     Runtime_base.wrap_unit ()
+     Runtime_base.wrap_unit () *)
   | Pexp_override fields ->
      begin match env.current_object with
        | None -> mismatch expr.pexp_loc; assert false
@@ -759,15 +742,15 @@ and eval_class_structure prims env loc class_structure =
     parent_view = [];
   }
 
-and eval_obj_initializers prims env obj =
+(* and eval_obj_initializers prims env obj =
   let eval_init expr =
     Runtime_base.unwrap_unit (eval_expr_in_object prims obj expr) in
-  List.iter eval_init obj.initializers
+  List.iter eval_init obj.initializers *)
 
 and eval_obj_new prims env class_expr =
   match Ptr.get @@ eval_class_expr prims env class_expr with
     | Object obj ->
-       eval_obj_initializers prims env obj;
+       (* eval_obj_initializers prims env obj; *)
        ptr @@ Object obj
     | other ->
        (* Class expressions may validly return non-Obj values,
