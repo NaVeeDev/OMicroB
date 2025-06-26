@@ -8,7 +8,7 @@ DEVICE ?= numworks
 STACK_SIZE = 16192
 HEAP_SIZE = 16192
 
-TARGETS := $(PROG).hex $(PROG).elf testsmap.elf
+TARGETS := $(PROG).hex $(PROG).elf
 
 INCLUDES := -I stdlib/ -I parsing/ -I interpreter/
 CINCLUDES := $(shell echo $(INCLUDES) | sed -e 's/ /,/g')
